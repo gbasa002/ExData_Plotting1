@@ -1,5 +1,9 @@
+#################                                  SET WORKING DIRECTORY                                ##################
+
 #getwd()
 #setwd("C:/Users/gbasa002/Desktop/EDA_Course Project1")
+
+#################                                   INSTALL/INCLUDE LIBRARIES                           ##################
 
 #install.packages ("dplyr")
 #install.packages ("plyr")
@@ -9,49 +13,50 @@ library (plyr)
 library (lubridate)
 library (datasets)
 
-###############################################read data##################################################################
+#################                                   READ DATA                                            ##################
 
 myWholeData <- read.table ("household_power_consumption.txt", sep = ";")
 
 ###CHANGE THE NAMES
 names (myWholeData) <- c("Date", "Time", "GAP", "GRP", "Voltage", "GI", "SM1", "SM2", "SM3")
 
-##############################################remove first column#########################################################
+################                                     REMOVE HEADER COLUMN                                 #################
 
 myWholeData <- myWholeData [-1,]
 str (myWholeData$Date)
 
-#########################################################convert date columns/use lubridate###############################
+#############                          CONVERT DATES FROM CHARACTER TO POSIXCT                              ################
 
 myWholeData$Date <- dmy(as.character(myWholeData$Date))
 str (myWholeData$Date)
 
-###############################################subsetting february data####################################################
+##########                                    SUBSET FEBRUARY DATA                                               ############
 
 myPartialData <- subset(myWholeData, myWholeData$Date == ymd("2007-02-01") | myWholeData$Date == ymd ("2007-02-02"))
 
-########################################################B4 PLOTTING###########################################################
+##############                               ARRANGE DATA BEFORE PLOTTING                                    ################
 
-#combine date and time column
+#COMBINE DATE AND TIME COLUMN
 datetimecombined <- as.POSIXct (paste (myPartialData$Date, myPartialData$Time), format = "%Y-%m-%d %H:%M:%S")
-#add an extra column for date time combined
+#ADD COMBINED DATE-TIME AS A NEW COLUMN
 myPartialData <- mutate (myPartialData, DateTimeCombined = datetimecombined)
 
-##convert from factors to numeric to be able to plot
+##CONVERT FROM FACTORS TO NUMERIC
 myPartialData$SM1 <- as.numeric(as.character(myPartialData$SM1))
 myPartialData$SM2 <- as.numeric(as.character(myPartialData$SM2))
 myPartialData$SM3 <- as.numeric(as.character(myPartialData$SM3))
 
 #str(myPartialData$Voltage)
 #str(myPartialData$GRP)
-#####BOTH ARE FACTORS. CONVERT THEM. 
-##convert these to numeric
+##BOTH ARE FACTORS. 
+##CONVERT FROM FACTORS TO NUMERIC
 myPartialData$GAP <- as.numeric(as.character(myPartialData$GAP))
 myPartialData$Voltage <- as.numeric(as.character(myPartialData$Voltage))
 myPartialData$GRP <- as.numeric(as.character(myPartialData$GRP))
 
-####NOW PLOTTING
-###4 FIGURE 2 BY 2 IN ROWS VS. COLUMNS
+##NOW PLOTTING
+##4 FIGURE 2 BY 2 IN ROWS VS. COLUMNS: USE MFROW
+##SAVE PLOT4 TO PNG FILE
 png ("plot4.png", 480, 480)
 attach (myPartialData)
 par (mfrow = c(2,2))
@@ -60,9 +65,8 @@ plot (myPartialData$DateTimeCombined,myPartialData$Voltage, type ="l", ylab = "V
 plot (myPartialData$DateTimeCombined,myPartialData$SM1, type ="l", ylab = "Energy sub metering", xlab = "")
 lines(myPartialData$DateTimeCombined, myPartialData$SM2, type ="l", col = "red")
 lines(myPartialData$DateTimeCombined, myPartialData$SM3, type ="l", col = "blue")
-#put the legend to topright
+##PUT THE LEGEND TO TOPRIGHT CORNER
 legend(x = "topright", y = NULL,c("Sub_metering_1","Sub_metering_2", "Sub_metering_3"), lty=c(1,1,1),lwd=c(2.5,2.5, 2.5),col=c("black","blue","red"))
-
 plot (myPartialData$DateTimeCombined,myPartialData$GRP, type ="l", ylab = "Global Reactive Power", xlab = "datetime")
 dev.off()
 

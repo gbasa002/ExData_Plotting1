@@ -1,5 +1,8 @@
+################                    GET AND SET WORKING DIRECTORY IF NECESSARY                      ###############
 #getwd()
 #setwd("C:/Users/gbasa002/Desktop/EDA_Course Project1")
+
+###############                    INSTALL LIBRARIES IF NECESSARY AND INCLUDE                       ###############
 
 #install.packages ("dplyr")
 #install.packages ("plyr")
@@ -9,39 +12,30 @@ library (plyr)
 library (lubridate)
 library (datasets)
 
-###############################################read data##################################################################
-
+###############                      READ AND TIDY DATA FROM TXT FILE                              ###############
 myWholeData <- read.table ("household_power_consumption.txt", sep = ";")
 
 ##CHANGE THE NAMES
 names (myWholeData) <- c("Date", "Time", "GAP", "GRP", "Voltage", "GI", "SM1", "SM2", "SM3")
-
-##############################################remove first column#########################################################
-
+##REMOVE HEADER COLUMN
 myWholeData <- myWholeData [-1,]
-#str (myWholeData$Date)
-
-#########################################################convert date columns/use lubridate###############################
-
+##CONVERT DATES FROM CHARACTERS TO DAY.MONTH.YEAR
 myWholeData$Date <- dmy(as.character(myWholeData$Date))
 #str (myWholeData$Date)
 
-###############################################subsetting february data####################################################
+###############                              SUBSET THE FEBRUARY DATA                              ###############
 
 myPartialData <- subset(myWholeData, myWholeData$Date == ymd("2007-02-01") | myWholeData$Date == ymd ("2007-02-02"))
 
-##Plot 2: Line- GAP versus Days (lubridate weekday??)
-#wday (myPartialData$Date, label = T)
-#myPartialData  <- mutate (myPartialData, Weekday = wday(myPartialData$Date, label = T)) #this was not necessary
-
-##this is necessary
-#combine date and time column
+##COMBINE DATE AND TIME COLUMNS TO USE IN PLOTTING
 datetimecombined <- as.POSIXct (paste (myPartialData$Date, myPartialData$Time), format = "%Y-%m-%d %H:%M:%S")
-#add an extra column for date time combined
+## ADD AN EXTRA COLUMN OF DATETIMECOMBINED
 myPartialData <- mutate (myPartialData, DateTimeCombined = datetimecombined)
 #str(myPartialData$GAP)
-#this is factors.Convert to numeric to plot.// use combined date time
+#CONVERSION FROM FACTORS TO NUMERIC TO BE ABLE TO PLOT
 myPartialData$GAP <- as.numeric(as.character(myPartialData$GAP))
+
+###############                              PLOT IT AND SAVE IT TO PNG                         ###############
 
 png("plot2.png", 480, 480)
 plot (myPartialData$DateTimeCombined,myPartialData$GAP, type ="l", ylab = "Global Active Power (kilowatts)", xlab = "")
